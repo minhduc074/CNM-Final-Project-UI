@@ -1,68 +1,65 @@
 <template>
-
   <v-container fill-height>
     <v-layout justify-center align-center v-if="profile">
-      
       <v-flex xs12 sm8 md8 style="max-width: 600px">
-        <v-card >
+        <v-card>
           <v-toolbar dark color="primary">
-            <v-toolbar-title>Profile</v-toolbar-title>               
+            <v-toolbar-title>Profile</v-toolbar-title>
           </v-toolbar>
 
-         
           <v-flex class="ml-3 my-4">
-            <v-avatar size="75px" class="mr-2" >
-                        <img
-                        class="img-circle elevation-2 "
-                        src="https://raw.githubusercontent.com/vuetifyjs/docs/dev/static/doc-images/lists/1.jpg"
-                        >
-                    </v-avatar>
-                    
-                    <v-btn color="primary" >Upload</v-btn>
-                    <v-btn>Delete</v-btn> 
+            <v-avatar size="75px" class="mr-2">
+              <img
+                class="img-circle elevation-2"
+                src="https://raw.githubusercontent.com/vuetifyjs/docs/dev/static/doc-images/lists/1.jpg"
+              >
+            </v-avatar>
+
+            <v-btn color="primary">Upload</v-btn>
+            <v-btn>Delete</v-btn>
           </v-flex>
-          
+
           <v-spacer></v-spacer>
           <v-divider></v-divider>
           <v-spacer></v-spacer>
           <v-card-text>
             <v-form>
-              <v-text-field 
-                prepend-icon="person" 
-                required 
-                v-model="profile.fullname" 
-                name="fullname" 
-                label="Full Name" 
-                type="text">
-              </v-text-field>
-              <v-text-field 
-                v-if="user" 
-                prepend-icon="face" 
-                required 
-                v-model="user.username" 
-                name="username" 
-                label="Username" 
-                type="username">
-              </v-text-field>
-              <v-text-field 
-                v-if="user" 
-                prepend-icon="lock" 
-                required 
-                v-model="user.password" 
-                name="password" 
-                label="Password" 
-                type="password">
-              </v-text-field>
+              <v-text-field
+                prepend-icon="person"
+                required
+                v-model="profile.fullname"
+                name="fullname"
+                label="Full Name"
+                type="text"
+              ></v-text-field>
+              <v-text-field
+                v-if="user"
+                prepend-icon="face"
+                required
+                v-model="user.username"
+                name="username"
+                label="Username"
+                type="username"
+              ></v-text-field>
+              <v-text-field
+                v-if="user"
+                prepend-icon="lock"
+                required
+                v-model="user.password"
+                name="password"
+                label="Password"
+                type="password"
+              ></v-text-field>
 
-              <v-text-field 
-                v-if="user && user.role === 'driver'" 
-                prepend-icon="phone" 
-                required 
-                v-model="user.phone" 
-                name="phone" 
-                label="Phone" 
-                type="phone" >
-              </v-text-field>
+              <v-text-field
+                v-if="user && user.role === 'driver'"
+                prepend-icon="phone"
+                required
+                v-model="user.phone"
+                name="phone"
+                label="Phone"
+                type="phone"
+              ></v-text-field>
 
               <!--
               <v-text-field 
@@ -88,7 +85,6 @@
       </v-flex>
     </v-layout>
   </v-container>
-
 </template>
 
 <script>
@@ -123,17 +119,18 @@ export default {
       }
 
       let config = {
-          headers: {
-            "x-access-token": self.$myStore.state.user.access_token,
-          }
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
         }
-        console.log(config);
+      };
+      console.log(config);
 
       self.loading = true;
       self.$axios
         .post(
           self.$myStore.state.wepAPI.url + self.user.role + "/update/",
-          data, config
+          data,
+          config
         )
         .then(res => {
           console.log(res.data);
@@ -149,8 +146,8 @@ export default {
         .catch(e => {
           self.loading = false;
           console.log(e);
-          if(e.response.status == 401 || e.response.status == 403)
-              self.silence_login();
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
         });
     },
     silence_login() {

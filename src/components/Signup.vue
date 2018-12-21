@@ -5,73 +5,87 @@
         <h1>Sign Up</h1>
       </v-flex>
       <v-flex xs12 sm6 offset-sm3 mt-3>
-          <v-layout column>
-            <v-flex>
-              <v-text-field
-                name="fullname"
-                label="Fullname"
-                id="fullname"
-                type="fullname"
-                v-model="user.fullname"
-                required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field
-                name="username"
-                label="Username"
-                id="username"
-                type="username"
-                v-model="user.username"
-                required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field
-                name="password"
-                label="Password"
-                id="password"
-                type="password"
-                v-model="user.password"
-                required></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field
-                name="confirmPassword"
-                label="Confirm Password"
-                id="confirmPassword"
-                type="password"
-                v-model="user.confirmPassword"
-                required
-                ></v-text-field>
-            </v-flex>
-            <select v-model="user.role">
-                <option disabled value="">Please select role</option>
-                <option>Admin</option>
-                <option>Staff</option>
-                <option>Driver</option>
+        <v-layout column>
+          <v-flex>
+            <v-text-field
+              name="fullname"
+              label="Fullname"
+              id="fullname"
+              type="fullname"
+              v-model="user.fullname"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field
+              name="username"
+              label="Username"
+              id="username"
+              type="username"
+              v-model="user.username"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field
+              name="password"
+              label="Password"
+              id="password"
+              type="password"
+              v-model="user.password"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex>
+            <v-text-field
+              name="confirmPassword"
+              label="Confirm Password"
+              id="confirmPassword"
+              type="password"
+              v-model="user.confirmPassword"
+              required
+            ></v-text-field>
+          </v-flex>
+          <select v-model="user.role">
+            <option disabled value>Please select role</option>
+            <option>Admin</option>
+            <option>Staff</option>
+            <option>Customer</option>
+          </select>
+          <v-flex>
+            <v-text-field
+              v-if="user.role === 'Driver'"
+              name="phone"
+              label="Phone"
+              id="phone"
+              type="phone"
+              v-model="user.phone"
+              required
+            ></v-text-field>
+          </v-flex>
+          <v-flex>
+            <select v-model="user.staff_role" v-if="user.role === 'Staff'">
+              <option disabled value>Please select role</option>
+              <option>Request Receiver</option>
+              <option>Location Identifier</option>
             </select>
-            <v-flex>
-              <v-text-field
-                v-if="user.role === 'Driver'" 
-                name="phone"
-                label="Phone"
-                id="phone"
-                type="phone"
-                v-model="user.phone"
-                required
-                ></v-text-field>
-            </v-flex>
-            <v-flex>
-              <select v-model="user.staff_role" v-if="user.role === 'Staff'">
-                <option disabled value="">Please select role</option>
-                <option>Request Receiver</option>
-                <option>Location Identifier</option>
-            </select>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="primary" type="submit" @click="SignUp">Sign Up</v-btn>
-            </v-flex>
-          </v-layout>
+          </v-flex>
+          <v-flex class="text-xs-center" mt-5>
+            <v-btn color="primary" type="submit" @click="SignUp">Sign Up</v-btn>
+          </v-flex>
+        </v-layout>
       </v-flex>
+
+      <v-snackbar
+        v-model="snackbar"
+        color="success"
+        :multi-line="false"
+        :timeout="5000"
+        :vertical="false"
+      >
+        {{error}}
+        <v-btn dark flat @click="snackbar = false">Close</v-btn>
+      </v-snackbar>
     </v-layout>
   </v-container>
 </template>
@@ -80,6 +94,8 @@
 export default {
   data() {
     return {
+      snackbar: false,
+      error: "",
       user: {
         fullname: "",
         username: "",
@@ -137,14 +153,16 @@ export default {
           .post(self.$myStore.state.wepAPI.url + role_url + "/register/", data)
           .then(res => {
             console.log(res.data);
-            self.$router.push("/Login");
+
+            self.resetField();
           })
           .catch(e => {
             self.loading = false;
             console.log(e);
           });
       }
-    }
+    },
+    resetField() {}
   }
 };
 </script>

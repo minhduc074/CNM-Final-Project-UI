@@ -82,13 +82,6 @@ export default {
       }
       return menu;
     },
-    sendRegister() {
-      console.log("REGISTER: " + this.user);
-      this.socket.emit("REGISTER", {
-        username: this.user,
-        role: this.$myStore.state.user.role
-      });
-    },
     customer_status_id2str(id) {
       console.log("customer_status_id2str: id=" + id);
       var self = this;
@@ -121,7 +114,6 @@ export default {
     username(newUsername, old_username) {
       console.log(old_username + " => " + newUsername);
       this.menuItems = this.getMenu();
-      (this.user = this.$myStore.state.user.username), this.sendRegister();
     },
     fullname(newFullname, oldFullname) {
       console.log(oldFullname + " => " + newFullname);
