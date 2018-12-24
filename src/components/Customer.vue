@@ -1,123 +1,173 @@
 <template>
-  <v-container fill-height>
-    <v-layout justify-center align-center v-if="profile">
-      <v-flex xs12 sm8 md8 style="max-width: 600px">
-        <v-card>
-          <v-toolbar dark color="primary">
-            <v-toolbar-title>Profile</v-toolbar-title>
-          </v-toolbar>
-
-          <v-flex class="ml-3 my-4">
-            <v-avatar size="75px" class="mr-2">
-              <img
-                class="img-circle elevation-2"
-                src="https://raw.githubusercontent.com/vuetifyjs/docs/dev/static/doc-images/lists/1.jpg"
-              >
-            </v-avatar>
-
-            <v-btn color="primary">Upload</v-btn>
-            <v-btn>Delete</v-btn>
-          </v-flex>
-
-          <v-spacer></v-spacer>
-          <v-divider></v-divider>
-          <v-spacer></v-spacer>
-          <v-card-text>
-            <v-form>
-              <v-text-field
-                prepend-icon="person"
-                required
-                v-model="profile.fullname"
-                name="fullname"
-                label="Full Name"
-                type="text"
-              ></v-text-field>
-              <v-text-field
-                v-if="user"
-                prepend-icon="face"
-                required
-                v-model="user.username"
-                name="username"
-                label="Username"
-                type="username"
-              ></v-text-field>
-              <v-text-field
-                v-if="user"
-                prepend-icon="lock"
-                required
-                v-model="user.password"
-                name="password"
-                label="Password"
-                type="password"
-              ></v-text-field>
-
-              <v-text-field
-                v-if="user && user.role === 'driver'"
-                prepend-icon="phone"
-                required
-                v-model="user.phone"
-                name="phone"
-                label="Phone"
-                type="phone"
-              ></v-text-field>
-
-              <!--
-              <v-text-field 
-                v-model="this.profile.id" 
-                hint="Create a unique URL for your profile. Many people use their first and last name. <br> [Ex: reel.ly/misha.collins]"
-                persistent-hint
-                id="username"  
-                prepend-icon="link" 
-                name="username" 
-                required
-                label="Profile URL " 
-                type="text">
-              </v-text-field>
-              -->
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <!-- <p class="red-text center" v-if="feedback">{{ feedback }}</p> -->
-            <v-btn flat @click.native="updatemyProfile" color="primary">Save</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-flex>
-    </v-layout>
-  </v-container>
+  <div>
+    <v-toolbar flat color="white">
+      <v-toolbar-title>Bank Account</v-toolbar-title>
+      <v-divider class="mx-2" inset vertical></v-divider>
+      <v-spacer></v-spacer>
+    </v-toolbar>
+    <v-data-table
+      v-model="customer.selected"
+      :headers="customer.headers"
+      :items="customer.items"
+      hide-actions
+      class="elevation-1"
+    >
+      <template slot="items" slot-scope="props">
+        <td>{{ props.item.id }}</td>
+        <td class="text-xs-left">{{ props.item.fullname }}</td>
+        <td class="text-xs-left">{{ props.item.phone }}</td>
+        <td class="text-xs-left">{{ props.item.address.main_address }}</td>
+        <td class="text-xs-left">{{ props.item.note }}</td>
+        <td class="text-xs-left">{{ props.item.status }}</td>
+        <td class="text-xs-left">{{ props.item.staff }}</td>
+        <td class="text-xs-left">{{ props.item.driver }}</td>
+        <td class="justify-center layout px-0">
+          <v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>
+        </td>
+      </template>
+    </v-data-table>
+  </div>
 </template>
 
 <script>
 export default {
   data() {
-    const self = this;
     return {
-      user: {
-        username: self.$myStore.state.user.username,
-        password: self.$myStore.state.user.password,
-        role: self.$myStore.state.user.role,
-        phone: self.$myStore.state.user.phone
-      },
-      profile: {
-        fullname: self.$myStore.state.user.fullname
+      customer: {
+        selected: [],
+        headers: [
+          {
+            text: "ID",
+            align: "left",
+            sortable: "desc",
+            value: "id"
+          },
+          {
+            text: "Customer name",
+            align: "left",
+            sortable: false,
+            value: "fullname"
+          },
+          {
+            text: "Phone",
+            align: "left",
+            sortable: false,
+            value: "phone"
+          },
+          {
+            text: "Address",
+            align: "left",
+            sortable: false,
+            value: "address"
+          },
+          {
+            text: "Note",
+            align: "left",
+            sortable: false,
+            value: "note"
+          },
+          {
+            text: "status",
+            align: "left",
+            sortable: true,
+            value: "status"
+          },
+          {
+            text: "staff",
+            align: "left",
+            sortable: true,
+            value: "staff"
+          },
+          {
+            text: "driver",
+            align: "left",
+            sortable: true,
+            value: "driver"
+          },
+          {
+            text: "action",
+            align: "left",
+            sortable: false,
+            value: "name"
+          }
+        ],
+        items: []
       }
     };
   },
+  mounted() {
+    this.getCustomerAccount();
+  },
   methods: {
-    updatemyProfile() {
-      const self = this;
-      const data = {
-        username: self.user.username,
-        password: self.user.password,
-        fullname: self.profile.fullname
+    getCustomerAccount() {
+      var self = this;
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
       };
-      // checking if the input is valid
-      //if (this.$refs.form.validate()) {
+      var data = { username: self.$myStore.state.user.username };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "accounts/getAll/", data, config)
+        .then(res => {
+          console.log(res.data);
+          self.$myStore.state.customer = [];
+          self.customer.items = self.$myStore.state.customer;
+          res.data.forEach(customer => {
+            var cus = {
+              id: customer.id,
+              fullname: customer.fullname,
+              phone: customer.phone,
+              note: customer.note,
+              status: self.customer_status_id2str(customer.status),
 
-      if (self.user.role == "driver") {
-        data["phone"] = self.user.phone;
-      }
+              status_text: "",
+              staff: customer.staff,
+              driver: customer.driver,
+              address: {
+                latLng: null,
+                main_address: customer.address,
+                geocoding_address: ""
+              }
+            };
+            //cus.status = self.customer_status_id2str(customer.status);
 
+            self.$myStore.state.customer.push(cus);
+          });
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+    },
+    editItem(item) {
+      var self = this;
+      console.log(item);
+      self.$myStore.state.current_customer = item.id;
+      self.update_staff(item);
+      self.update_status(item, 1);
+      self.$router.push("/staffs/Identifier/maps");
+    },
+    customer_status_id2str(id) {
+      console.log("customer_status_id2str: id=" + id);
+      var self = this;
+      var ret = "";
+      console.log(self.$myStore.state.customer_status);
+      self.$myStore.state.customer_status.forEach(element => {
+        if (id === element.id) {
+          console.log("customer_status_id2str: returning: " + element.text);
+          ret = element.text;
+        }
+      });
+      return ret;
+    },
+    update_staff(customer) {
+      var self = this;
+      var data = { id: customer.id, staff: self.$myStore.state.user.username };
       let config = {
         headers: {
           "x-access-token": self.$myStore.state.user.access_token
@@ -127,21 +177,32 @@ export default {
 
       self.loading = true;
       self.$axios
-        .post(
-          self.$myStore.state.wepAPI.url + self.user.role + "/update/",
-          data,
-          config
-        )
+        .post(self.$myStore.state.wepAPI.url + "customer/staff", data, config)
         .then(res => {
           console.log(res.data);
-          self.$myStore.state.user.username = res.data.username;
-          self.$myStore.state.user.password = self.user.password;
-          self.$myStore.state.user.fullname = self.profile.fullname;
-          if (self.$myStore.state.user.role == "driver") {
-            self.$myStore.state.user.phone = self.user.phone;
-          }
-          console.log(self.$myStore.state.user);
-          self.$router.push("/");
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+    },
+    update_status(customer, status) {
+      var self = this;
+      var data = { id: customer.id, status: status };
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      console.log(config);
+
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "customer/status", data, config)
+        .then(res => {
+          console.log(res.data);
         })
         .catch(e => {
           self.loading = false;
@@ -167,9 +228,12 @@ export default {
           .post(self.$myStore.state.wepAPI.url + role_url + "/login/", data)
           .then(res => {
             console.log(res.data);
+            self.$myStore.state.user.username = res.data.username;
+            self.$myStore.state.user.password = self.user.password;
             self.$myStore.state.user.fullname = res.data.fullname;
             self.$myStore.state.user.access_token = res.data.access_token;
             self.$myStore.state.user.refresh_token = res.data.refresh_token;
+            self.$myStore.state.user.role = role_url;
           })
           .catch(e => {
             self.loading = false;

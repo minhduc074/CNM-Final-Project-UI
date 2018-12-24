@@ -62,7 +62,8 @@ export default new Vuex.Store({
     },
     wepAPI: {
       url: "http://localhost:3000/"
-    }
+    },
+    current_customer: -1
   },
   mutations: {
     increment(state) {

@@ -8,6 +8,7 @@ const routerOptions = [
   { path: "/admin/", component: "Admin" },
   { path: "/staff/", component: "Staff" },
   { path: "/customer/", component: "Customer" },
+  { path: "/staff/editcustomer/", component: "StaffCustomerEdit" },
   { path: "/logout", component: "Logout" }
 ];
 
