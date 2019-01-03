@@ -52,9 +52,7 @@ export default {
         title: "Home",
         path:
           "/" +
-          self.$myStore.state.user.role +
-          "/" +
-          self.$myStore.state.user.staff_role,
+          self.$myStore.state.user.role,
         icon: "home"
       });
       if (self.$myStore.state.user.username == "") {
@@ -82,14 +80,14 @@ export default {
       }
       return menu;
     },
-    customer_status_id2str(id) {
-      console.log("customer_status_id2str: id=" + id);
+    status_id2str(id) {
+      console.log("status_id2str: id=" + id);
       var self = this;
       var ret = "";
-      console.log(self.$myStore.state.customer_status);
-      self.$myStore.state.customer_status.forEach(element => {
+      console.log(self.$myStore.state.status);
+      self.$myStore.state.status.forEach(element => {
         if (id === element.id) {
-          console.log("customer_status_id2str: returning: " + element.text);
+          console.log("status_id2str: returning: " + element.text);
           ret = element.text;
         }
       });

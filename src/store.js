@@ -25,7 +25,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     count: 0,
-    customer_status: [
+    status: [
       {
         id: 0,
         text: "Open"

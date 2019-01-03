@@ -153,10 +153,10 @@ export default {
               fullname: customer.fullname,
               email: customer.email,
               phone: customer.phone,
-              status: self.customer_status_id2str(customer.status),
+              status: self.status_id2str(customer.status),
               password: customer.password
             };
-            //cus.status = self.customer_status_id2str(customer.status);
+            //cus.status = self.status_id2str(customer.status);
 
             self.customer.items.push(cus);
           });
@@ -174,14 +174,14 @@ export default {
       self.$myStore.state.current_customer = item;
       self.$router.push("/staff/editcustomer");
     },
-    customer_status_id2str(id) {
-      console.log("customer_status_id2str: id=" + id);
+    status_id2str(id) {
+      console.log("status_id2str: id=" + id);
       var self = this;
       var ret = "";
-      console.log(self.$myStore.state.customer_status);
-      self.$myStore.state.customer_status.forEach(element => {
+      console.log(self.$myStore.state.status);
+      self.$myStore.state.status.forEach(element => {
         if (id === element.id) {
-          console.log("customer_status_id2str: returning: " + element.text);
+          console.log("status_id2str: returning: " + element.text);
           ret = element.text;
         }
       });
