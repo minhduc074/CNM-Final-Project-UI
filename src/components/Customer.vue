@@ -5,6 +5,38 @@
       <v-divider class="mx-2" inset vertical></v-divider>
       <v-spacer></v-spacer>
     </v-toolbar>
+    <v-dialog v-model="dialog_internal_bank_transfer" max-width="50%">
+      <v-btn slot="activator" color="primary">Internal transfer</v-btn>
+      <v-card>
+        <v-card-title>
+          <span class="headline">Internal transfer</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-container grid-list-md>
+            <v-layout column>
+              <v-select :items="bank_account" label="Bank account" solo v-model="current_account"></v-select>
+              <v-text-field
+                placeholder="Receiver"
+                id="receiver"
+                type="text"
+                v-model="receiver"
+                required
+              ></v-text-field>
+              <v-flex>
+                <v-text-field v-model="money" label="money"></v-text-field>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" flat @click.native="close_money">Cancel</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="save_money">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-data-table
       v-model="customer.selected"
       :headers="customer.headers"
@@ -15,10 +47,6 @@
       <template slot="items" slot-scope="props">
         <td>{{ props.item.bank_account }}</td>
         <td class="text-xs-left">{{ props.item.balance }}</td>
-
-
-
-
       </template>
     </v-data-table>
   </div>
@@ -28,6 +56,8 @@
 export default {
   data() {
     return {
+      dialog_internal_bank_transfer: false,
+      bank_account: [],
       customer: {
         selected: [],
         headers: [
@@ -45,7 +75,11 @@ export default {
           }
         ],
         items: []
-      }
+      },
+      current_account: 0,
+      money: 0,
+      receiver: "",
+      contents: ""
     };
   },
   mounted() {
@@ -73,9 +107,10 @@ export default {
             console.log(customer);
             var cus = {
               bank_account: customer.account_id,
-              balance: customer.balance,
+              balance: customer.balance
             };
             //cus.status = self.status_id2str(customer.status);
+            self.bank_account.push(cus.bank_account);
 
             self.$myStore.state.customer.push(cus);
           });
@@ -86,6 +121,59 @@ export default {
           if (e.response.status == 401 || e.response.status == 403)
             self.silence_login();
         });
+    },
+    close_money() {
+      this.dialog_internal_bank_transfer = false;
+      setTimeout(() => {
+        this.current_account = 0;
+      }, 300);
+    },
+
+    save_money() {
+      var self = this;
+      console.log("Internal bank transfer");
+      console.log(self.current_account);
+      if (self.current_account == null || self.current_account == 0) {
+        this.current_account = 0;
+      } else {
+        var data = {
+          username: self.$myStore.state.user.username,
+          sender_bank_id: self.current_account,
+          receiver_bank_id: self.receiver,
+          money: self.money,
+          contents: self.contents
+        };
+
+        console.log(data);
+
+        let config = {
+          headers: {
+            "x-access-token": self.$myStore.state.user.access_token
+          }
+        };
+        console.log(config);
+        self.loading = true;
+        self.$axios
+          .post(
+            self.$myStore.state.wepAPI.url + "transactions/add",
+            data,
+            config
+          )
+          .then(res => {
+            console.log(res.data);
+            self.error = "Customer Successfully";
+            self.snackbar = true;
+            self.getCustomerAccount();
+          })
+          .catch(e => {
+            self.loading = false;
+            console.log(e);
+            if (e.response.status == 401 || e.response.status == 403)
+              self.silence_login();
+          });
+      }
+
+      self.close_money();
     },
     status_id2str(id) {
       console.log("status_id2str: id=" + id);
