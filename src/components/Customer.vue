@@ -35,6 +35,9 @@
                 <v-text-field v-model="phone" label="Phone"></v-text-field>
               </v-flex>
               <v-flex>
+                <v-text-field v-model="contents" label="Note"></v-text-field>
+              </v-flex>
+              <v-flex>
                 <v-text-field v-model="money" label="money"></v-text-field>
               </v-flex>
               <v-btn color="blue darken-1" flat @click.native="get_capcha">Get Capcha</v-btn>
@@ -390,6 +393,13 @@ export default {
       this.dialog_internal_bank_transfer = false;
       setTimeout(() => {
         this.current_account = 0;
+        this.receiver = "";
+        this.fullname= "";
+        this.email= "";
+        this.phone= "";
+        this.contents= "";
+        this.otp= "";
+        this.money = 0;
       }, 500);
     },
 

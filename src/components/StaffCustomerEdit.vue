@@ -288,6 +288,7 @@ export default {
       this.dialog_new_bank_account = false;
       setTimeout(() => {
         this.current_account = 0;
+        this.money = 0;
       }, 300);
     },
 
