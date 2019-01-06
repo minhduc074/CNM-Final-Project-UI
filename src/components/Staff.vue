@@ -191,25 +191,20 @@ export default {
       var self = this;
       const data = {
         username: self.$myStore.state.user.username,
-        password: self.$myStore.state.user.password
+        rfToken: self.$myStore.state.user.rfToken
       };
       console.log("silence_login");
-      var role_url = self.$myStore.state.user.role;
+      var role_url = "users";
       if (
         self.$myStore.state.user.username != "" &&
-        self.$myStore.state.user.password != ""
+        self.$myStore.state.user.rfToken != ""
       ) {
         self.loading = true;
         self.$axios
-          .post(self.$myStore.state.wepAPI.url + role_url + "/login/", data)
+          .post(self.$myStore.state.wepAPI.url + role_url + "/silence_login/", data)
           .then(res => {
             console.log(res.data);
-            self.$myStore.state.user.username = res.data.username;
-            self.$myStore.state.user.password = self.user.password;
-            self.$myStore.state.user.fullname = res.data.fullname;
             self.$myStore.state.user.access_token = res.data.access_token;
-            self.$myStore.state.user.refresh_token = res.data.refresh_token;
-            self.$myStore.state.user.role = role_url;
           })
           .catch(e => {
             self.loading = false;
