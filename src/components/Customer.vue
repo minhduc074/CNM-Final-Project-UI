@@ -23,8 +23,22 @@
                 v-model="receiver"
                 required
               ></v-text-field>
+              <v-btn color="blue darken-1" flat @click.native="get_receiver">Check Receiver</v-btn>
+              <v-flex>
+                <v-text-field v-model="fullname" label="Full Name"></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field v-model="email" label="Email"></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field v-model="phone" label="Phone"></v-text-field>
+              </v-flex>
               <v-flex>
                 <v-text-field v-model="money" label="money"></v-text-field>
+              </v-flex>
+              <v-btn color="blue darken-1" flat @click.native="get_capcha">Get Capcha</v-btn>
+              <v-flex>
+                <v-text-field v-model="otp" label="otp"></v-text-field>
               </v-flex>
             </v-layout>
           </v-container>
@@ -79,7 +93,11 @@ export default {
       current_account: 0,
       money: 0,
       receiver: "",
-      contents: ""
+      fullname: "",
+      email: "",
+      phone: "",
+      contents: "",
+      otp: ""
     };
   },
   mounted() {
@@ -141,7 +159,8 @@ export default {
           sender_bank_id: self.current_account,
           receiver_bank_id: self.receiver,
           money: self.money,
-          contents: self.contents
+          contents: self.contents, 
+          otp: self.otp
         };
 
         console.log(data);
@@ -187,6 +206,54 @@ export default {
         }
       });
       return ret;
+    },
+    get_receiver(){
+      var self = this;
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      var data = { account_id: self.receiver };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "accounts/user/", data, config)
+        .then(res => {
+          console.log(res.data);
+          self.fullname = res.data.fullname;
+          self.email = res.data.email;
+          self.phone = res.data.phone;
+          console.log (self.phone);
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+    },
+    get_capcha(){
+      var self = this;
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      var data = { username: self.$myStore.state.user.username, email: self.$myStore.state.user.email };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "transactions/get_otp/", data, config)
+        .then(res => {
+          console.log(res.data);
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
     },
     silence_login() {
       var self = this;
