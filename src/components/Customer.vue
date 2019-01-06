@@ -492,6 +492,58 @@ export default {
             self.silence_login();
         });
     },
+    getReceiverAccount() {
+      var self = this;
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      var data = { user_id: self.$myStore.state.user.username };
+      console.log(data);
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "accounts/receiver/", data, config)
+        .then(res => {
+          console.log(res.data);
+          res.data.forEach(receiver => {
+            console.log("receiver: ");
+            console.log(receiver);
+            self.receiver_account.push(receiver.reveiver_id);
+          });
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+    },
+    saveReceiverAccount() {
+      console.log("saveReceiverAccount")
+      var self = this;
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      var data = { user_id: self.$myStore.state.user.username, reveiver_id:  self.receiver };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "accounts/add_receiver/", data, config)
+        .then(res => {
+          console.log(res.data);
+          self.getReceiverAccount();
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+    },
 
     silence_login() {
       var self = this;
