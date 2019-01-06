@@ -33,6 +33,7 @@
           
           </v-flex>
           -->
+          <button @click="recaptcha">Execute captcha</button>
           <v-flex class="text-xs-center" mt-5>
             <v-btn color="primary" type="submit" @click="login">Sign In</v-btn>
           </v-flex>
@@ -55,7 +56,7 @@
 </template>
 
 <script>
-import InvisibleRecaptcha from "vue-invisible-recaptcha";
+
 export default {
   data() {
     return {
@@ -69,12 +70,24 @@ export default {
       ready: false
     };
   },
-  components: {
-    "invisible-recaptcha": InvisibleRecaptcha
-  },
   methods: {
+    recaptcha() {
+      var self = this;
+      self.$recaptcha('login').then((token) => {
+        console.log(token) // Will print the token
+        self.ready=true;
+        self.error = "Capcha ready";
+        self.snackbar = true;
+      })
+    },
     login() {
       const self = this;
+      if(self.ready == false)
+      {
+        self.error = "Capcha not ready";
+        self.snackbar = true;
+        return;
+      }
       const data = {
         username: self.user.username,
         password: self.user.password

@@ -6,6 +6,11 @@ import router from "./router";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import axios from "axios";
+import { VueReCaptcha } from 'vue-recaptcha-v3';
+ 
+// For more options see below
+Vue.use(VueReCaptcha, { siteKey: '6Lc8NocUAAAAAHvMN69UATA5in5d8PqkaLU1iyQE' });
+
 
 import Vuex from "vuex";
 Vue.use(Vuex);
