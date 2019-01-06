@@ -37,6 +37,51 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="dialog_transacsion_history" max-width="80%">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Transactions History</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-container grid-list-md>
+            <v-data-table
+              v-model="current_transacsion_history.selected"
+              :headers="current_transacsion_history.headers"
+              :items="current_transacsion_history.items"
+              hide-actions
+              class="elevation-1"
+            >
+              <template slot="items" slot-scope="props">
+                <td class="text-xs-left">{{ props.item.type }}</td>
+                <td>{{ props.item.transaction_id }}</td>
+                <td class="text-xs-left">{{ props.item.sender_bank_id }}</td>
+                <td class="text-xs-left">{{ props.item.receiver_bank_id }}</td>
+                <td class="text-xs-left">{{ props.item.money }}</td>
+                <td class="text-xs-left">{{ props.item.contents }}</td>
+                <td class="text-xs-left">{{ props.item.transfer_date }}</td>
+              </template>
+            </v-data-table>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" flat @click.native="close_transacsion">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="dialog_confirm" max-width="20%">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Are you sure?</span>
+        </v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" flat @click.native="confirm_yes">Yes</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="confirm_no">No</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-data-table
       v-model="customer.selected"
       :headers="customer.headers"
@@ -47,6 +92,10 @@
       <template slot="items" slot-scope="props">
         <td>{{ props.item.bank_account }}</td>
         <td class="text-xs-left">{{ props.item.balance }}</td>
+        <td class="justify-center layout px-0">
+          <v-icon small class="mr-2" @click="viewTransacsion(props.item)">search</v-icon>
+          <v-icon small class="mr-2" @click="showConfirmDialog(props.item)">delete</v-icon>
+        </td>
       </template>
     </v-data-table>
   </div>
@@ -56,7 +105,6 @@
 export default {
   data() {
     return {
-      dialog_internal_bank_transfer: false,
       bank_account: [],
       customer: {
         selected: [],
@@ -76,10 +124,63 @@ export default {
         ],
         items: []
       },
+      dialog_internal_bank_transfer: false,
       current_account: 0,
       money: 0,
       receiver: "",
-      contents: ""
+      contents: "",
+
+      dialog_transacsion_history: false,
+      current_transacsion_history: {
+        selected: [],
+        headers: [
+          {
+            text: "Type",
+            align: "left",
+            sortable: "desc",
+            value: "type"
+          },
+          {
+            text: "ID",
+            align: "left",
+            sortable: "desc",
+            value: "transaction_id"
+          },
+          {
+            text: "Sender",
+            align: "left",
+            sortable: false,
+            value: "sender_bank_id"
+          },
+          {
+            text: "Receiver",
+            align: "left",
+            sortable: "desc",
+            value: "receiver_bank_id"
+          },
+          {
+            text: "Money",
+            align: "left",
+            sortable: "desc",
+            value: "money"
+          },
+          {
+            text: "Note",
+            align: "left",
+            sortable: "desc",
+            value: "contents"
+          },
+          {
+            text: "Date",
+            align: "left",
+            sortable: "desc",
+            value: "transfer_date"
+          }
+        ],
+        items: []
+      },
+      dialog_confirm: false,
+      account_delete: ""
     };
   },
   mounted() {
@@ -121,6 +222,129 @@ export default {
           if (e.response.status == 401 || e.response.status == 403)
             self.silence_login();
         });
+    },
+    showConfirmDialog(item) {
+      var self = this;
+      self.account_delete = item.bank_account;
+      self.dialog_confirm = true;
+    },
+    confirm_yes() {
+      var self = this;
+      self.deleteAccount();
+      self.dialog_confirm = false;
+    },
+    confirm_no() {
+      var self = this;
+      self.account_delete = "";
+      self.dialog_confirm = false;
+    },
+    viewTransacsion(item) {
+      var self = this;
+      self.current_transacsion_history.items = [];
+      console.log(item);
+
+      var data = {
+        sender_bank_id: item.bank_account
+      };
+
+      console.log(data);
+
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(
+          self.$myStore.state.wepAPI.url + "transactions/get_by_sender",
+          data,
+          config
+        )
+        .then(res => {
+          console.log(res.data);
+          res.data.forEach(trans => {
+            console.log("trans: ");
+            console.log(trans);
+            trans.type = "Sent";
+
+            self.current_transacsion_history.items.push(trans);
+          });
+          var data = {
+            account_id: item.bank_account
+          };
+          self.$axios
+            .post(
+              self.$myStore.state.wepAPI.url + "transactions/get_by_receiver",
+              data,
+              config
+            )
+            .then(res => {
+              console.log(res.data);
+              res.data.forEach(trans => {
+                console.log("trans: ");
+                console.log(trans);
+                trans.type = "Received";
+
+                self.current_transacsion_history.items.push(trans);
+              });
+            })
+            .catch(e => {
+              self.loading = false;
+              console.log(e);
+              if (e.response.status == 401 || e.response.status == 403)
+                self.silence_login();
+            });
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+        });
+
+      self.dialog_transacsion_history = true;
+    },
+    deleteAccount(item) {
+      var self = this;
+      self.current_transacsion_history.items = [];
+      console.log(item);
+
+      var data = {
+        account_id: self.account_delete
+      };
+
+      console.log(data);
+
+      let config = {
+        headers: {
+          "x-access-token": self.$myStore.state.user.access_token
+        }
+      };
+      console.log(config);
+      self.loading = true;
+      self.$axios
+        .post(self.$myStore.state.wepAPI.url + "accounts/remove", data, config)
+        .then(res => {
+          console.log(res.data);
+          self.error = "Deleted";
+          self.snackbar = true;
+        })
+        .catch(e => {
+          self.loading = false;
+          console.log(e);
+          if (e.response.status == 401 || e.response.status == 403)
+            self.silence_login();
+          self.error = "Delete failed";
+          self.snackbar = true;
+        });
+    },
+    close_transacsion() {
+      this.dialog_transacsion_history = false;
+      setTimeout(() => {
+        this.current_transacsion_history.items = [];
+      }, 300);
     },
     close_money() {
       this.dialog_internal_bank_transfer = false;
