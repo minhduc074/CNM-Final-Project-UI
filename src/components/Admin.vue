@@ -6,18 +6,16 @@
       <v-spacer></v-spacer>
     </v-toolbar>
     
-    <v-data-table
-      v-model="customer.selected"
-      :headers="customer.headers"
-      :items="customer.items"
-      hide-actions
-      class="elevation-1"
-    >
-      <template slot="items" slot-scope="props">
-        <td>{{ props.item.bank_account }}</td>
-        <td class="text-xs-left">{{ props.item.balance }}</td>
-      </template>
-    </v-data-table>
+    <v-card-text>
+            <v-container grid-list-md>
+              <v-layout column>
+                <v-flex>
+                  <v-text-field v-model="bank_account" label="Current Bank Balance" readonly></v-text-field>
+                </v-flex>
+              </v-layout>
+            </v-container>
+          </v-card-text>
+
   </div>
 </template>
 
@@ -26,16 +24,11 @@ export default {
   data() {
     return {
       dialog_internal_bank_transfer: false,
-      bank_account: [],
+      bank_account: 0,
       customer: {
         selected: [],
         headers: [
-          {
-            text: "Bank Account",
-            align: "left",
-            sortable: "desc",
-            value: "bank_account"
-          },
+
           {
             text: "Balance",
             align: "left",
@@ -48,10 +41,10 @@ export default {
     };
   },
   mounted() {
-    this.getCustomerAccount();
+    this.getAllBal();
   },
   methods: {
-    getCustomerAccount() {
+    getAllBal() {
       var self = this;
       let config = {
         headers: {
@@ -62,11 +55,9 @@ export default {
       console.log(config);
       self.loading = true;
       self.$axios
-        .post(self.$myStore.state.wepAPI.url + "accounts/getAll/", data, config)
+        .post(self.$myStore.state.wepAPI.url + "accounts/getAllBal/", data, config)
         .then(res => {
           console.log(res.data);
-          self.$myStore.state.customer = [];
-          self.customer.items = self.$myStore.state.customer;
           res.data.forEach(customer => {
             console.log("customer: ");
             console.log(customer);
@@ -75,9 +66,9 @@ export default {
               balance: customer.balance
             };
             //cus.status = self.status_id2str(customer.status);
-            self.bank_account.push(cus.bank_account);
+            self.bank_account += customer.balance;
+            console.log(self.bank_account);
 
-            self.$myStore.state.customer.push(cus);
           });
         })
         .catch(e => {
