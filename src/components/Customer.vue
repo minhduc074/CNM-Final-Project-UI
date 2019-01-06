@@ -113,6 +113,18 @@
         </td>
       </template>
     </v-data-table>
+    <v-card>
+      <v-snackbar
+        v-model="snackbar"
+        color="success"
+        :multi-line="false"
+        :timeout="5000"
+        :vertical="false"
+      >
+        {{error}}
+        <v-btn dark flat @click="snackbar = false">Close</v-btn>
+      </v-snackbar>
+    </v-card>
   </div>
 </template>
 
@@ -120,6 +132,8 @@
 export default {
   data() {
     return {
+      snackbar: false,
+      error: "",
       bank_account: [],
       receiver_account: [],
       customer: {
@@ -334,7 +348,8 @@ export default {
       console.log(item);
 
       var data = {
-        account_id: self.account_delete
+        account_id: self.account_delete, 
+        username: self.$myStore.state.user.username
       };
 
       console.log(data);
@@ -352,13 +367,16 @@ export default {
           console.log(res.data);
           self.error = "Deleted";
           self.snackbar = true;
+          self.getCustomerAccount();
+          self.getReceiverAccount();
         })
         .catch(e => {
+          console.log(e.data);
           self.loading = false;
           console.log(e);
           if (e.response.status == 401 || e.response.status == 403)
             self.silence_login();
-          self.error = "Delete failed";
+          self.error = "Delete failed: " + e.reason;
           self.snackbar = true;
         });
     },
