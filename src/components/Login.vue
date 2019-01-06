@@ -24,7 +24,15 @@
               required
             ></v-text-field>
           </v-flex>
-
+          <!---
+          <v-flex>
+          <invisible-recaptcha sitekey="6Lc8NocUAAAAAHvMN69UATA5in5d8PqkaLU1iyQE" :callback="login()"
+              class="btn btn-danger" type="submit" id="do-something-btn" :disabled="false">
+              Do something!
+          </invisible-recaptcha>
+          
+          </v-flex>
+          -->
           <v-flex class="text-xs-center" mt-5>
             <v-btn color="primary" type="submit" @click="login">Sign In</v-btn>
           </v-flex>
@@ -47,6 +55,7 @@
 </template>
 
 <script>
+import InvisibleRecaptcha from "vue-invisible-recaptcha";
 export default {
   data() {
     return {
@@ -56,8 +65,12 @@ export default {
         username: "",
         password: "",
         role: ""
-      }
+      },
+      ready: false
     };
+  },
+  components: {
+    "invisible-recaptcha": InvisibleRecaptcha
   },
   methods: {
     login() {
@@ -81,18 +94,15 @@ export default {
             self.$myStore.state.user.access_token = res.data.access_token;
             self.$myStore.state.user.refresh_token = res.data.refresh_token;
             self.$myStore.state.user.role = res.data.role;
+            self.$myStore.state.user.email = res.data.email;
 
-            if (self.user.role == "Driver") {
-              self.$myStore.state.user.phone = res.data.phone;
-            } else {
-              self.$myStore.state.user.staff_role = res.data.role;
-              if (res.data.role == 0) {
-                self.$myStore.state.user.role = "admin";
-              } else if (res.data.role == 1) {
-                self.$myStore.state.user.role = "staff";
-              } else if (res.data.role == 2) {
-                self.$myStore.state.user.role = "customer";
-              }
+            self.$myStore.state.user.staff_role = res.data.role;
+            if (res.data.role == 0) {
+              self.$myStore.state.user.role = "admin";
+            } else if (res.data.role == 1) {
+              self.$myStore.state.user.role = "staff";
+            } else if (res.data.role == 2) {
+              self.$myStore.state.user.role = "customer";
             }
             console.log(self.$myStore.state.user);
             self.$router.push("/" + self.$myStore.state.user.role + "/");
@@ -104,6 +114,29 @@ export default {
             console.log(e);
           });
       }
+    },
+    initReCaptcha: function() {
+      var self = this;
+      setTimeout(function() {
+        if (typeof grecaptcha === "undefined") {
+          self.initReCaptcha();
+        } else {
+          grecaptcha.render("recaptcha", {
+            sitekey: "SITE_KEY",
+            size: "invisible",
+            badge: "inline",
+            callback: self.submit
+          });
+        }
+      }, 100);
+    },
+    validate: function() {
+      // your validations...
+      // ...
+      grecaptcha.execute();
+    },
+    submit: function(token) {
+      console.log(token);
     }
   }
 };
